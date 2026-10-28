@@ -5,6 +5,8 @@ const cors = require("cors");
 const pool = require("./config/database");
 const { sessionMiddleware } = require("./config/session");
 const authRoutes = require("./routes/auth");
+const newsRoutes = require("./routes/news");
+const publicNewsRoutes = require("./routes/publicNews");
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET is required");
@@ -41,6 +43,8 @@ app.get("/api/health", async (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/news", publicNewsRoutes);
+app.use("/api/admin/news", newsRoutes);
 
 app.use((error, req, res, next) => {
   if (res.headersSent) {
