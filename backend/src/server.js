@@ -7,6 +7,7 @@ const { sessionMiddleware } = require("./config/session");
 const authRoutes = require("./routes/auth");
 const newsRoutes = require("./routes/news");
 const publicNewsRoutes = require("./routes/publicNews");
+const errorHandler = require("./middleware/errorHandler");
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET is required");
@@ -46,18 +47,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/news", publicNewsRoutes);
 app.use("/api/admin/news", newsRoutes);
 
-app.use((error, req, res, next) => {
-  if (res.headersSent) {
-    return next(error);
-  }
-
-  console.error("Request error:", error.message);
-
-  res.status(500).json({
-    success: false,
-    message: "Internal server error",
-  });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
