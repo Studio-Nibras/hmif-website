@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPublicNews } from "../dashboard/publicNewsService";
+import { Badge, Button, Card, Loading } from "../../../components/ui";
+import { getPublicNews } from "./publicNewsService";
 
 function formatDate(value) {
   if (!value) return "Tanggal tidak tersedia";
@@ -15,7 +15,11 @@ function formatDate(value) {
 
 function NewsCard({ article }) {
   return (
-    <article className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-hmif-navy/5">
+    <Card
+      as="article"
+      padding="none"
+      className="group overflow-hidden rounded-2xl border-slate-200/80 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-hmif-navy/5"
+    >
       <Link
         to={`/berita/${encodeURIComponent(article.slug)}`}
         className="block"
@@ -40,9 +44,9 @@ function NewsCard({ article }) {
 
         <div className="p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="rounded-full bg-hmif-surface px-3 py-1.5 font-bold text-hmif-teal">
+            <Badge className="bg-hmif-surface font-bold text-hmif-teal">
               {article.category_name}
-            </span>
+            </Badge>
             <span className="text-slate-400">
               {formatDate(article.published_at)}
             </span>
@@ -53,7 +57,8 @@ function NewsCard({ article }) {
           </h2>
 
           <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-500">
-            {article.excerpt || "Baca informasi selengkapnya dalam artikel ini."}
+            {article.excerpt ||
+              "Baca informasi selengkapnya dalam artikel ini."}
           </p>
 
           <span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-hmif-teal">
@@ -61,7 +66,7 @@ function NewsCard({ article }) {
           </span>
         </div>
       </Link>
-    </article>
+    </Card>
   );
 }
 
@@ -69,62 +74,37 @@ export default function PublicNewsPage() {
   const [articles, setArticles] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loadedPage, setLoadedPage] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const loading = loadedPage !== page;
   const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
 
-    setLoading(true);
-    setError("");
-
     getPublicNews(page)
       .then((result) => {
         if (!active) return;
+
         setArticles(result.articles || []);
         setPagination(result.pagination || null);
+        setError("");
+        setLoadedPage(page);
       })
       .catch(() => {
-        if (active) {
-          setError("Berita belum dapat dimuat. Silakan coba lagi.");
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false);
+        if (!active) return;
+
+        setError("Berita belum dapat dimuat. Silakan coba lagi.");
+        setLoadedPage(page);
       });
 
     return () => {
       active = false;
     };
-  }, [page]);
+  }, [page, retryCount]);
 
   return (
     <main className="min-h-screen bg-hmif-surface">
-      <header className="border-b border-white/10 bg-hmif-teal-dark text-white">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-2xl bg-white/10 font-heading text-xl font-extrabold">
-              H
-            </span>
-            <span>
-              <span className="block font-heading text-sm font-extrabold">
-                HMIF UNIBA
-              </span>
-              <span className="mt-1 block text-xs text-sky-100/70">
-                Himpunan Mahasiswa Informatika
-              </span>
-            </span>
-          </Link>
-
-          <Link
-            to="/login"
-            className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold transition hover:bg-white/10"
-          >
-            Admin
-          </Link>
-        </nav>
-      </header>
-
       <section className="relative overflow-hidden bg-gradient-to-br from-hmif-teal-dark via-hmif-teal to-hmif-navy px-5 py-16 text-white sm:px-8 sm:py-24">
         <div className="pointer-events-none absolute -right-20 -top-28 size-80 rounded-full border-[50px] border-white/[0.05]" />
         <div className="pointer-events-none absolute -bottom-32 left-1/3 size-72 rounded-full bg-hmif-cyan/10 blur-3xl" />
@@ -159,37 +139,37 @@ export default function PublicNewsPage() {
         </div>
 
         {loading ? (
-          <div className="grid min-h-52 place-items-center rounded-2xl border border-slate-200 bg-white">
-            <div className="text-center">
-              <div className="mx-auto size-9 animate-spin rounded-full border-4 border-hmif-teal/15 border-t-hmif-teal" />
-              <p className="mt-4 text-sm font-semibold text-slate-500">
-                Memuat berita...
-              </p>
-            </div>
-          </div>
+          <Card className="grid min-h-52 place-items-center rounded-2xl">
+            <Loading label="Memuat berita..." />
+          </Card>
         ) : error ? (
-          <div
+          <Card
             role="alert"
-            className="rounded-2xl border border-red-200 bg-white p-8 text-center text-sm text-red-700"
+            className="rounded-2xl border-red-200 p-8 text-center text-sm text-red-700"
           >
             {error}
-            <button
+            <Button
               type="button"
-              onClick={() => setPage((current) => current)}
-              className="ml-2 font-extrabold underline"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setLoadedPage(null);
+                setRetryCount((current) => current + 1);
+              }}
+              className="ml-2 text-red-700 underline"
             >
               Coba lagi
-            </button>
-          </div>
+            </Button>
+          </Card>
         ) : articles.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+          <Card className="rounded-2xl border-dashed border-slate-300 px-6 py-16 text-center">
             <h3 className="font-heading text-lg font-extrabold text-hmif-navy">
               Belum ada berita
             </h3>
             <p className="mt-2 text-sm text-slate-500">
               Berita yang telah dipublikasikan akan tampil di halaman ini.
             </p>
-          </div>
+          </Card>
         ) : (
           <>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -200,35 +180,32 @@ export default function PublicNewsPage() {
 
             {pagination && pagination.totalPages > 1 && (
               <div className="mt-10 flex items-center justify-center gap-4">
-                <button
+                <Button
                   type="button"
                   disabled={page <= 1}
                   onClick={() => setPage((current) => current - 1)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-hmif-teal transition hover:bg-hmif-surface disabled:opacity-40"
+                  variant="secondary"
+                  className="text-hmif-teal disabled:opacity-40"
                 >
                   ← Sebelumnya
-                </button>
+                </Button>
                 <span className="text-sm font-semibold text-slate-500">
                   {page} / {pagination.totalPages}
                 </span>
-                <button
+                <Button
                   type="button"
                   disabled={page >= pagination.totalPages}
                   onClick={() => setPage((current) => current + 1)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-hmif-teal transition hover:bg-hmif-surface disabled:opacity-40"
+                  variant="secondary"
+                  className="text-hmif-teal disabled:opacity-40"
                 >
                   Berikutnya →
-                </button>
+                </Button>
               </div>
             )}
           </>
         )}
       </section>
-
-      <footer className="border-t border-slate-200 bg-white px-5 py-7 text-center text-xs text-slate-400">
-        © {new Date().getFullYear()} HMIF UNIBA Surakarta. Seluruh hak cipta
-        dilindungi.
-      </footer>
     </main>
   );
 }

@@ -1,4 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  Input,
+  Loading,
+  Modal,
+  Select,
+  Textarea,
+} from "../../components/ui";
 import {
   createNews,
   deleteNews,
@@ -35,15 +45,12 @@ function StatusBadge({ status }) {
   const published = status === "published";
 
   return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
-        published
-          ? "bg-emerald-50 text-emerald-700"
-          : "bg-amber-50 text-amber-700"
-      }`}
+    <Badge
+      variant={published ? "success" : "warning"}
+      className="px-3 py-1 font-bold"
     >
       {published ? "Published" : "Draft"}
-    </span>
+    </Badge>
   );
 }
 
@@ -54,38 +61,18 @@ function ArticlePreview({ form, categories, imageUrl, onClose }) {
     )?.name || "Kategori";
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-sm sm:p-8"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+    <Modal
+      open
+      onClose={onClose}
+      title="Article Preview"
+      description="Tampilan simulasi sebelum publikasi"
+      size="xl"
     >
-      <article className="my-auto w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-hmif-teal">
-              Article Preview
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              Tampilan simulasi sebelum publikasi
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup preview"
-            className="rounded-xl px-3 py-2 text-xl text-slate-400 hover:bg-slate-100"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="p-5 sm:p-8">
+      <article>
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-hmif-teal/10 px-3 py-1.5 text-xs font-bold text-hmif-teal">
+            <Badge className="bg-hmif-teal/10 text-xs font-bold text-hmif-teal">
               {categoryName}
-            </span>
+            </Badge>
             <StatusBadge status={form.status} />
             <span className="text-xs text-slate-400">
               {formatDate(new Date())}
@@ -119,14 +106,16 @@ function ArticlePreview({ form, categories, imageUrl, onClose }) {
           </div>
 
           {form.status === "draft" && (
-            <div className="mt-8 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+            <Card
+              padding="sm"
+              className="mt-8 rounded-xl border-amber-100 bg-amber-50 text-sm text-amber-800"
+            >
               Artikel ini masih berstatus draft dan belum siap ditampilkan
               sebagai berita terpublikasi.
-            </div>
+            </Card>
           )}
-        </div>
       </article>
-    </div>
+    </Modal>
   );
 }
 
@@ -141,17 +130,32 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState("");
 
+  const previewUrlRef = useRef(null);
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
-    if (!selectedFile) {
-      setLocalPreviewUrl("");
-      return undefined;
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
+
+  function updateLocalPreview(file) {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
     }
 
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setLocalPreviewUrl(objectUrl);
+    if (!file) {
+      setLocalPreviewUrl("");
+      return;
+    }
 
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [selectedFile]);
+    const objectUrl = URL.createObjectURL(file);
+    previewUrlRef.current = objectUrl;
+    setLocalPreviewUrl(objectUrl);
+  }
 
   const imageUrl = localPreviewUrl || form.cover_image || "";
 
@@ -168,6 +172,7 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
     setError("");
 
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      updateLocalPreview(null);
       setSelectedFile(null);
       event.target.value = "";
       setError("Format gambar harus JPG, PNG, atau WEBP.");
@@ -175,13 +180,25 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
+      updateLocalPreview(null);
       setSelectedFile(null);
       event.target.value = "";
       setError("Ukuran gambar maksimal 5 MB.");
       return;
     }
 
+    updateLocalPreview(file);
     setSelectedFile(file);
+  }
+
+  function handleRemoveImage() {
+    updateLocalPreview(null);
+    setSelectedFile(null);
+    setForm((current) => ({ ...current, cover_image: "" }));
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
   async function handleSubmit(event) {
@@ -230,45 +247,23 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
     }
   }
 
-  const fieldClass =
-    "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-hmif-teal focus:ring-2 focus:ring-hmif-teal/10";
-
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/50 p-4 backdrop-blur-sm sm:p-8"
-        onMouseDown={(event) => {
-          if (event.target === event.currentTarget && !saving) onClose();
+      <Modal
+        open
+        onClose={() => {
+          if (!saving) onClose();
         }}
+        title={initialData?.id ? "Edit Berita" : "Tambah Berita"}
+        description="Lengkapi informasi artikel HMIF."
+        size="xl"
+        closeOnBackdrop={!saving}
+        closeOnEscape={!saving}
       >
         <form
           onSubmit={handleSubmit}
-          className="my-auto w-full max-w-3xl rounded-3xl bg-white p-5 shadow-2xl sm:p-8"
+          className="max-h-[calc(100vh-12rem)] overflow-y-auto"
         >
-          <div className="mb-6 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-hmif-teal">
-                Content Management
-              </p>
-              <h2 className="mt-2 font-heading text-xl font-extrabold text-hmif-navy">
-                {initialData?.id ? "Edit Berita" : "Tambah Berita"}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Lengkapi informasi artikel HMIF.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              aria-label="Tutup form"
-              className="rounded-xl px-3 py-2 text-xl text-slate-400 hover:bg-slate-100 disabled:opacity-50"
-            >
-              ×
-            </button>
-          </div>
-
           {error && (
             <div
               role="alert"
@@ -279,76 +274,61 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
           )}
 
           <div className="space-y-5">
-            <label className="block text-sm font-bold text-slate-700">
-              Judul berita *
-              <input
-                name="title"
-                value={form.title}
-                onChange={changeField}
-                maxLength={255}
-                required
-                className={fieldClass}
-                placeholder="Masukkan judul berita"
-              />
-            </label>
+            <Input
+              label="Judul berita"
+              name="title"
+              value={form.title}
+              onChange={changeField}
+              maxLength={255}
+              required
+              placeholder="Masukkan judul berita"
+            />
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <label className="block text-sm font-bold text-slate-700">
-                Kategori *
-                <select
-                  name="category_id"
-                  value={form.category_id}
-                  onChange={changeField}
-                  required
-                  className={fieldClass}
-                >
-                  <option value="">Pilih kategori</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select
+                label="Kategori"
+                name="category_id"
+                value={form.category_id}
+                onChange={changeField}
+                required
+                placeholder="Pilih kategori"
+                options={categories.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                }))}
+              />
 
-              <label className="block text-sm font-bold text-slate-700">
-                Status publikasi
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={changeField}
-                  className={fieldClass}
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                </select>
-              </label>
+              <Select
+                label="Status publikasi"
+                name="status"
+                value={form.status}
+                onChange={changeField}
+                placeholder="Pilih status"
+                options={[
+                  { value: "draft", label: "Draft" },
+                  { value: "published", label: "Published" },
+                ]}
+              />
             </div>
 
-            <label className="block text-sm font-bold text-slate-700">
-              Ringkasan
-              <textarea
-                name="excerpt"
-                value={form.excerpt || ""}
-                onChange={changeField}
-                rows={2}
-                className={fieldClass}
-                placeholder="Ringkasan singkat untuk preview berita"
-              />
-            </label>
+            <Textarea
+              label="Ringkasan"
+              name="excerpt"
+              value={form.excerpt || ""}
+              onChange={changeField}
+              rows={2}
+              placeholder="Ringkasan singkat untuk preview berita"
+            />
 
-            <label className="block text-sm font-bold text-slate-700">
-              Isi berita *
-              <textarea
-                name="content"
-                value={form.content}
-                onChange={changeField}
-                rows={8}
-                required
-                className={fieldClass}
-                placeholder="Tulis isi berita di sini..."
-              />
-            </label>
+            <Textarea
+              label="Isi berita"
+              name="content"
+              value={form.content}
+              onChange={changeField}
+              rows={8}
+              required
+              placeholder="Tulis isi berita di sini..."
+            />
 
             <div>
               <label className="block text-sm font-bold text-slate-700">
@@ -369,6 +349,7 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
                 </span>
 
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   onChange={handleImageChange}
@@ -391,20 +372,16 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
                       </p>
                     </div>
 
-                    <button
+                    <Button
                       type="button"
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setForm((current) => ({
-                          ...current,
-                          cover_image: "",
-                        }));
-                      }}
+                      onClick={handleRemoveImage}
                       disabled={saving}
-                      className="shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      variant="danger"
+                      size="sm"
+                      className="shrink-0 rounded-lg"
                     >
                       Hapus gambar
-                    </button>
+                    </Button>
                   </div>
 
                   <img
@@ -418,40 +395,39 @@ function ArticleForm({ initialData, categories, onClose, onSaved }) {
           </div>
 
           <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between">
-            <button
+            <Button
               type="button"
               onClick={() => setShowPreview(true)}
               disabled={saving}
-              className="rounded-xl border border-hmif-teal px-5 py-3 text-sm font-bold text-hmif-teal hover:bg-hmif-teal/5 disabled:opacity-50"
+              variant="outline"
             >
               Lihat Preview Artikel
-            </button>
+            </Button>
 
             <div className="flex flex-col-reverse gap-3 sm:flex-row">
-              <button
+              <Button
                 type="button"
                 onClick={onClose}
                 disabled={saving}
-                className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                variant="secondary"
               >
                 Batal
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="submit"
-                disabled={saving}
-                className="rounded-xl bg-hmif-teal px-5 py-3 text-sm font-bold text-white transition hover:bg-hmif-teal-dark disabled:cursor-not-allowed disabled:opacity-60"
+                loading={saving}
               >
                 {saving
                   ? selectedFile
                     ? "Mengunggah & menyimpan..."
                     : "Menyimpan..."
                   : "Simpan Berita"}
-              </button>
+              </Button>
             </div>
           </div>
         </form>
-      </div>
+      </Modal>
 
       {showPreview && (
         <ArticlePreview
@@ -486,9 +462,6 @@ export default function NewsPage() {
   const [deletingId, setDeletingId] = useState(null);
 
   const loadArticles = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
     try {
       const result = await getNews({
         page: pagination.page,
@@ -503,6 +476,7 @@ export default function NewsPage() {
         ...current,
         ...(result.pagination || {}),
       }));
+      setError("");
     } catch (err) {
       setError(err.message || "Gagal memuat berita.");
     } finally {
@@ -511,24 +485,69 @@ export default function NewsPage() {
   }, [pagination.page, pagination.limit, search, status, categoryId]);
 
   useEffect(() => {
+    let active = true;
+
     getNewsCategories()
-      .then((result) => setCategories(result.categories || []))
-      .catch((err) => setError(err.message || "Gagal memuat kategori."));
+      .then((result) => {
+        if (active) setCategories(result.categories || []);
+      })
+      .catch((err) => {
+        if (active) setError(err.message || "Gagal memuat kategori.");
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    loadArticles();
-  }, [loadArticles]);
+    let active = true;
+
+    getNews({
+      page: pagination.page,
+      limit: pagination.limit,
+      search,
+      status,
+      category_id: categoryId,
+    })
+      .then((result) => {
+        if (!active) return;
+
+        setArticles(result.articles || []);
+        setPagination((current) => ({
+          ...current,
+          ...(result.pagination || {}),
+        }));
+        setError("");
+      })
+      .catch((err) => {
+        if (active) setError(err.message || "Gagal memuat berita.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [pagination.page, pagination.limit, search, status, categoryId]);
 
   function applySearch(event) {
     event.preventDefault();
+    setLoading(true);
     setPagination((current) => ({ ...current, page: 1 }));
     setSearch(searchInput.trim());
   }
 
   function changeFilter(setter, value) {
+    setLoading(true);
     setter(value);
     setPagination((current) => ({ ...current, page: 1 }));
+  }
+
+  function changePage(page) {
+    setLoading(true);
+    setPagination((current) => ({ ...current, page }));
   }
 
   async function openEdit(articleId) {
@@ -570,11 +589,9 @@ export default function NewsPage() {
       setNotice("Berita berhasil dihapus.");
 
       if (articles.length === 1 && pagination.page > 1) {
-        setPagination((current) => ({
-          ...current,
-          page: current.page - 1,
-        }));
+        changePage(pagination.page - 1);
       } else {
+        setLoading(true);
         await loadArticles();
       }
     } catch (err) {
@@ -588,12 +605,12 @@ export default function NewsPage() {
     setFormOpen(false);
     setFormData(null);
     setNotice("Berita berhasil disimpan.");
+    setLoading(true);
     setPagination((current) => ({ ...current, page: 1 }));
     setSearchInput("");
     setSearch("");
     setStatus("");
     setCategoryId("");
-    await loadArticles();
   }
 
   return (
@@ -611,28 +628,28 @@ export default function NewsPage() {
           </p>
         </div>
 
-        <button
+        <Button
+          type="button"
           onClick={() => {
             setFormData(null);
             setFormOpen(true);
             setNotice("");
             setError("");
           }}
-          className="rounded-xl bg-hmif-teal px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-hmif-teal-dark"
         >
           + Tambah Berita
-        </button>
+        </Button>
       </div>
 
       <div className="mb-5 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <Card className="rounded-2xl p-5">
           <p className="text-sm text-slate-500">Total hasil</p>
           <p className="mt-2 text-2xl font-extrabold text-hmif-navy">
             {pagination.total}
           </p>
-        </div>
+        </Card>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <Card className="rounded-2xl p-5">
           <p className="text-sm text-slate-500">Halaman</p>
           <p className="mt-2 text-2xl font-extrabold text-hmif-navy">
             {pagination.totalPages ? pagination.page : 0}
@@ -641,71 +658,74 @@ export default function NewsPage() {
               / {pagination.totalPages}
             </span>
           </p>
-        </div>
+        </Card>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <Card className="rounded-2xl p-5">
           <p className="text-sm text-slate-500">Kategori tersedia</p>
           <p className="mt-2 text-2xl font-extrabold text-hmif-navy">
             {categories.length}
           </p>
-        </div>
+        </Card>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <Card className="rounded-2xl p-5 sm:p-6">
         <form
           onSubmit={applySearch}
           className="mb-5 grid gap-3 md:grid-cols-[minmax(180px,1fr)_180px_160px_auto]"
         >
-          <input
+          <Input
+            type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Cari judul berita..."
-            className="min-w-0 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-hmif-teal"
+            aria-label="Cari judul berita"
+            className="min-w-0"
           />
 
-          <select
+          <Select
             value={categoryId}
             onChange={(event) =>
               changeFilter(setCategoryId, event.target.value)
             }
-            className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-hmif-teal"
-          >
-            <option value="">Semua kategori</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            aria-label="Filter kategori"
+            placeholder="Semua kategori"
+            options={categories.map((category) => ({
+              value: category.id,
+              label: category.name,
+            }))}
+          />
 
-          <select
+          <Select
             value={status}
             onChange={(event) => changeFilter(setStatus, event.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-hmif-teal"
-          >
-            <option value="">Semua status</option>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
+            aria-label="Filter status"
+            placeholder="Semua status"
+            options={[
+              { value: "draft", label: "Draft" },
+              { value: "published", label: "Published" },
+            ]}
+          />
 
-          <button
+          <Button
             type="submit"
-            className="rounded-xl bg-hmif-navy px-5 py-3 text-sm font-bold text-white hover:bg-hmif-teal"
+            className="bg-hmif-navy hover:bg-hmif-teal"
           >
             Cari
-          </button>
+          </Button>
         </form>
 
         {notice && (
           <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             <span>{notice}</span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setNotice("")}
               aria-label="Tutup pesan"
             >
               ×
-            </button>
+            </Button>
           </div>
         )}
 
@@ -715,13 +735,15 @@ export default function NewsPage() {
             className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
           >
             <span>{error}</span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setError("")}
               aria-label="Tutup pesan"
             >
               ×
-            </button>
+            </Button>
           </div>
         )}
 
@@ -744,7 +766,11 @@ export default function NewsPage() {
                     colSpan="5"
                     className="px-3 py-14 text-center text-sm text-slate-500"
                   >
-                    Memuat berita...
+                    <Loading
+                      size="sm"
+                      label="Memuat berita..."
+                      className="justify-center py-0"
+                    />
                   </td>
                 </tr>
               ) : articles.length === 0 ? (
@@ -801,22 +827,26 @@ export default function NewsPage() {
 
                     <td className="px-3 py-4">
                       <div className="flex justify-end gap-2">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => openEdit(article.id)}
-                          className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:border-hmif-teal hover:text-hmif-teal"
+                          variant="secondary"
+                          size="sm"
+                          className="min-h-8 rounded-lg px-3 text-xs"
                         >
                           Edit
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
                           type="button"
                           onClick={() => handleDelete(article)}
-                          disabled={deletingId === article.id}
-                          className="rounded-lg border border-red-100 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          loading={deletingId === article.id}
+                          variant="danger"
+                          size="sm"
+                          className="min-h-8 rounded-lg px-3 text-xs"
                         >
                           {deletingId === article.id ? "Menghapus..." : "Hapus"}
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -832,40 +862,34 @@ export default function NewsPage() {
           </p>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               disabled={pagination.page <= 1 || loading}
-              onClick={() =>
-                setPagination((current) => ({
-                  ...current,
-                  page: current.page - 1,
-                }))
-              }
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => changePage(pagination.page - 1)}
+              variant="secondary"
+              size="sm"
+              className="rounded-lg text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Sebelumnya
-            </button>
+            </Button>
 
             <span className="px-2 text-sm text-slate-500">
               {pagination.page} / {Math.max(1, pagination.totalPages)}
             </span>
 
-            <button
+            <Button
               type="button"
               disabled={pagination.page >= pagination.totalPages || loading}
-              onClick={() =>
-                setPagination((current) => ({
-                  ...current,
-                  page: current.page + 1,
-                }))
-              }
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => changePage(pagination.page + 1)}
+              variant="secondary"
+              size="sm"
+              className="rounded-lg text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Berikutnya
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {formOpen && (
         <ArticleForm

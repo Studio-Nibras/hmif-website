@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Button, Card, Input } from "../../components/ui";
 import { loginAdmin } from "./authService";
 
 export default function LoginPage() {
@@ -30,7 +31,7 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute -bottom-40 -left-32 size-96 rounded-full bg-hmif-cyan/15 blur-3xl" />
 
       <section className="relative w-full max-w-md">
-        <div className="rounded-3xl border border-hmif-navy/[0.08] bg-white p-7 shadow-[0_20px_60px_-20px_rgba(23,54,79,0.15)] sm:p-9">
+        <Card className="rounded-3xl border-hmif-navy/[0.08] p-7 shadow-[0_20px_60px_-20px_rgba(23,54,79,0.15)] sm:p-9">
           <div className="mb-7">
             <h2 className="font-heading text-2xl font-extrabold tracking-tight text-hmif-navy">
               Selamat datang
@@ -50,52 +51,39 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-bold text-hmif-navy"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="admin@hmif.com"
-                autoComplete="username"
-                required
-                className="w-full rounded-xl border border-hmif-navy/10 bg-hmif-surface px-4 py-3.5 text-sm text-hmif-navy outline-none transition placeholder:text-slate-400 focus:border-hmif-teal focus:bg-white focus:ring-4 focus:ring-hmif-teal/10"
-              />
-            </div>
+            <Input
+              id="email"
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="admin@hmif.com"
+              autoComplete="username"
+              required
+              className="border-hmif-navy/10 bg-hmif-surface py-3.5 focus:bg-white focus:ring-4 focus:ring-hmif-teal/10"
+            />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-bold text-hmif-navy"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Masukkan password"
-                autoComplete="current-password"
-                required
-                className="w-full rounded-xl border border-hmif-navy/10 bg-hmif-surface px-4 py-3.5 text-sm text-hmif-navy outline-none transition placeholder:text-slate-400 focus:border-hmif-teal focus:bg-white focus:ring-4 focus:ring-hmif-teal/10"
-              />
-            </div>
+            <Input
+              id="password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Masukkan password"
+              autoComplete="current-password"
+              required
+              className="border-hmif-navy/10 bg-hmif-surface py-3.5 focus:bg-white focus:ring-4 focus:ring-hmif-teal/10"
+            />
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-hmif-teal px-5 py-3.5 font-heading text-sm font-bold text-white transition hover:bg-hmif-teal-dark disabled:cursor-not-allowed disabled:opacity-60"
+              loading={loading}
+              fullWidth
+              className="py-3.5 font-heading"
             >
               {loading ? "Memverifikasi..." : "Masuk"}
               {!loading && <span aria-hidden="true">→</span>}
-            </button>
+            </Button>
             <p className="mt-6 text-center text-xs leading-5 text-slate-500">
               Akses khusus administrator
             </p>
@@ -108,7 +96,7 @@ export default function LoginPage() {
               </Link>
             </div>
           </form>
-        </div>
+        </Card>
       </section>
     </main>
   );
