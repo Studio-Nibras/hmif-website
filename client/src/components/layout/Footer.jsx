@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "../../assets/hmif-logo.png";
 
 const navigationLinks = [
   { label: "Beranda", href: "/" },
@@ -46,9 +47,7 @@ export default function Footer() {
               to="/"
               className="inline-flex items-center gap-2 font-heading text-base font-extrabold tracking-wide"
             >
-              <span className="flex size-9 items-center justify-center rounded-full border border-white/30 text-xs">
-                HIF
-              </span>
+              <img src={logo} alt="" className="size-9 object-contain" />
               <span>
                 HMIF UNIBA
                 <span className="mt-0.5 block text-xs font-medium tracking-normal text-sky-100/70">

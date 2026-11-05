@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui";
+import logo from "../../assets/hmif-logo.png";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -19,15 +20,13 @@ export default function Navbar() {
           className="flex items-center gap-3"
           aria-label="HMIF UNIBA beranda"
         >
-          <span className="grid size-10 place-items-center rounded-xl border border-white/20 bg-white/10 font-heading text-lg font-extrabold text-white backdrop-blur">
-            H
-          </span>
+          <img src={logo} alt="" className="size-14 object-contain" />
           <span>
             <span className="block font-heading text-sm font-extrabold tracking-wide text-white">
               HMIF UNIBA
             </span>
             <span className="mt-0.5 block text-[10px] font-semibold tracking-[0.12em] text-sky-100/70">
-              INFORMATIKA
+              SURAKARTA
             </span>
           </span>
         </Link>

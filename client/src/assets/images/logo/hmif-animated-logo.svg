@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" role="img" aria-labelledby="title desc">
+  <title id="title">Logo HMIF Universitas Islam Batik Surakarta</title>
+  <desc id="desc">Logo HMIF dengan orbit biru dan oranye, simbol pemrograman, tulisan HMIF, dan nama universitas. Orbit dan partikel bergerak perlahan.</desc>
+
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#08A9ED"/>
+      <stop offset="1" stop-color="#087FC2"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF542B"/>
+      <stop offset="1" stop-color="#F04424"/>
+    </linearGradient>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="bannerClip">
+      <path d="M238 410 L661 410 L651 439 L232 439 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Orange orbital ring -->
+  <g fill="none" stroke="url(#orange)" stroke-width="8" stroke-linecap="round">
+    <path id="orangeOrbit" d="M130 248 C173 161 250 151 310 157 C405 166 468 218 480 291 C494 371 429 464 327 489 C239 511 156 451 124 368 C108 325 112 282 130 248"/>
+    <path d="M130 248 C173 161 250 151 310 157 C405 166 468 218 480 291" stroke-width="5" opacity=".8"/>
+  </g>
+
+  <!-- Main blue horizontal orbit sweep -->
+  <path d="M112 284 C168 240 239 224 320 222 C405 220 467 233 500 268 C521 290 505 324 482 350"
+        fill="none" stroke="url(#blue)" stroke-width="25" stroke-linecap="round"/>
+
+  <!-- Main blue vertical orbit sweep -->
+  <path d="M314 122 C276 166 240 230 226 300 C211 375 218 457 245 511 C262 545 296 552 330 529"
+        fill="none" stroke="url(#blue)" stroke-width="25" stroke-linecap="round"/>
+  <path d="M314 122 C344 94 377 105 397 151 C382 128 357 119 337 131"
+        fill="none" stroke="#08A9ED" stroke-width="20" stroke-linecap="round"/>
+
+  <!-- Orbit nodes -->
+  <g>
+    <circle cx="111" cy="282" r="18" fill="#F04424"/>
+    <circle cx="499" cy="285" r="17" fill="#F04424"/>
+    <circle cx="310" cy="123" r="18" fill="#07517E"/>
+    <circle cx="183" cy="480" r="18" fill="#07517E"/>
+    <circle cx="411" cy="470" r="18" fill="#07517E"/>
+  </g>
+
+  <!-- Programming mark -->
+  <g fill="#164B70" opacity=".98">
+    <path d="M128 307 L145 304 L133 334 L145 359 L128 365 L115 336 Z"/>
+    <path d="M164 301 L181 299 L161 365 L144 368 Z"/>
+    <path d="M184 304 L200 307 L211 337 L194 365 L178 360 L193 337 Z"/>
+  </g>
+
+  <!-- HMIF wordmark, recreated as editable vector text -->
+  <g fill="#164B70" font-family="Arial, Helvetica, sans-serif" font-style="italic" font-weight="900" letter-spacing="-9">
+    <text x="245" y="375" font-size="125" textLength="326" lengthAdjust="spacingAndGlyphs">HMIF</text>
+  </g>
+
+  <!-- Organization name -->
+  <text x="249" y="400" fill="#164B70" font-family="Arial, Helvetica, sans-serif"
+        font-size="17" font-style="italic" font-weight="800" textLength="406" lengthAdjust="spacingAndGlyphs">
+    Himpunan Mahasiswa Jurusan Informatika
+  </text>
+
+  <!-- University banner -->
+  <path d="M238 410 L661 410 L651 439 L232 439 Z" fill="#08A9ED"/>
+  <text x="248" y="432" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif"
+        font-size="21" font-style="italic" font-weight="800" textLength="392" lengthAdjust="spacingAndGlyphs">
+    Universitas Islam Batik Surakarta
+  </text>
+
+  <!-- Pixel accent -->
+  <g fill="#08A9ED">
+    <path d="M245 446 H266 L262 463 H241 Z"/>
+    <path d="M270 446 H286 L283 459 H267 Z"/>
+    <path d="M259 466 H274 L271 480 H256 Z"/>
+  </g>
+
+  <!-- Subtle moving orbit particles -->
+  <g filter="url(#softGlow)">
+    <circle r="5" fill="#FF542B">
+      <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#orangeOrbit"/>
+      </animateMotion>
+    </circle>
+    <circle r="4" fill="#08A9ED">
+      <animateMotion dur="6s" begin="-2s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#orangeOrbit"/>
+      </animateMotion>
+    </circle>
+  </g>
+</svg>
