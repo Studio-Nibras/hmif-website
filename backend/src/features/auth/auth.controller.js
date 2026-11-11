@@ -1,11 +1,6 @@
+const { authenticateAdmin } = require("./auth.service");
 
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const pool = require("../config/database");
-
-const router = express.Router();
-
-router.post("/login", async (req, res, next) => {
+async function login(req, res, next) {
   try {
     const { email, password } = req.body || {};
 
@@ -22,17 +17,9 @@ router.post("/login", async (req, res, next) => {
       });
     }
 
-    const [admins] = await pool.execute(
-      `SELECT id, name, email, password_hash
-       FROM admins
-       WHERE email = ?
-       LIMIT 1`,
-      [email.trim().toLowerCase()]
-    );
+    const admin = await authenticateAdmin(email, password);
 
-    const admin = admins[0];
-
-    if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {
+    if (!admin) {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
@@ -44,18 +31,14 @@ router.post("/login", async (req, res, next) => {
         return next(error);
       }
 
-      req.session.admin = {
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
-      };
+      req.session.admin = admin;
 
       req.session.save((saveError) => {
         if (saveError) {
           return next(saveError);
         }
 
-        res.json({
+        return res.json({
           success: true,
           message: "Login successful",
           admin: req.session.admin,
@@ -65,9 +48,9 @@ router.post("/login", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}
 
-router.get("/me", (req, res) => {
+function getCurrentAdmin(req, res) {
   if (!req.session?.admin) {
     return res.status(401).json({
       success: false,
@@ -75,15 +58,16 @@ router.get("/me", (req, res) => {
     });
   }
 
-  res.json({
+  return res.json({
     success: true,
     admin: req.session.admin,
   });
-});
+}
 
-router.post("/logout", (req, res, next) => {
+function logout(req, res, next) {
   if (!req.session) {
     res.clearCookie("hmif.sid");
+
     return res.json({
       success: true,
       message: "Logout successful",
@@ -102,11 +86,15 @@ router.post("/logout", (req, res, next) => {
       path: "/",
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "Logout successful",
     });
   });
-});
+}
 
-module.exports = router;
+module.exports = {
+  login,
+  getCurrentAdmin,
+  logout,
+};
