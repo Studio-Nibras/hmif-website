@@ -452,6 +452,7 @@ export default function NewsPage() {
   const [status, setStatus] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [formData, setFormData] = useState(null);
@@ -466,6 +467,7 @@ export default function NewsPage() {
         search,
         status,
         category_id: categoryId,
+        refreshKey,
       });
 
       setArticles(result.articles || []);
@@ -479,7 +481,14 @@ export default function NewsPage() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, search, status, categoryId]);
+  }, [
+    pagination.page,
+    pagination.limit,
+    search,
+    status,
+    categoryId,
+    refreshKey,
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -506,6 +515,7 @@ export default function NewsPage() {
       search,
       status,
       category_id: categoryId,
+      refreshKey,
     })
       .then((result) => {
         if (!active) return;
@@ -527,7 +537,14 @@ export default function NewsPage() {
     return () => {
       active = false;
     };
-  }, [pagination.page, pagination.limit, search, status, categoryId]);
+  }, [
+    pagination.page,
+    pagination.limit,
+    search,
+    status,
+    categoryId,
+    refreshKey,
+  ]);
 
   function applySearch(event) {
     event.preventDefault();
@@ -602,12 +619,19 @@ export default function NewsPage() {
     setFormOpen(false);
     setFormData(null);
     setNotice("Berita berhasil disimpan.");
+
     setLoading(true);
-    setPagination((current) => ({ ...current, page: 1 }));
+    setPagination((current) => ({
+      ...current,
+      page: 1,
+    }));
+
     setSearchInput("");
     setSearch("");
     setStatus("");
     setCategoryId("");
+
+    setRefreshKey((current) => current + 1);
   }
 
   return (
