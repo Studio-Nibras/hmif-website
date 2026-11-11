@@ -5,8 +5,8 @@ const cors = require("cors");
 const pool = require("./config/database");
 const { sessionMiddleware } = require("./config/session");
 const authRoutes = require("./features/auth/auth.routes");
-const newsRoutes = require("./routes/news");
-const publicNewsRoutes = require("./routes/publicNews");
+const newsRoutes = require("./features/news/news.routes");
+const publicNewsRoutes = require("./features/public-news/publicNews.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 if (!process.env.SESSION_SECRET) {
