@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Card, Input } from "../../components/ui";
-import { loginAdmin } from "./authService";
+import { Button, Card, Input } from "../../../components/ui";
+import { loginAdmin } from "../services/authService";
 
 export default function LoginPage() {
   const navigate = useNavigate();

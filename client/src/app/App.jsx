@@ -1,15 +1,20 @@
 import { useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import PublicLayout from "../layouts/PublicLayout";
-import LoginPage from "../features/auth/LoginPage";
-import DashboardPage from "../features/dashboard/DashboardPage";
-import HomePage from "../features/public/home/HomePage";
-import PublicNewsPage from "../features/public/news/PublicNewsPage";
-import PublicNewsDetailPage from "../features/public/news/PublicNewsDetailPage";
 import Preloader from "../features/public/components/preloader/Preloader";
 
-function PublicRoutes() {
+import HomePage from "../features/public/home/HomePage";
+import AboutPage from "../features/public/about/AboutPage";
+import ProgramsPage from "../features/public/programs/ProgramsPage";
+import PublicNewsPage from "../features/public/news/PublicNewsPage";
+import PublicNewsDetailPage from "../features/public/news/PublicNewsDetailPage";
+import ContactPage from "../features/public/contact/ContactPage";
+
+import LoginPage from "../features/auth/pages/LoginPage";
+import DashboardPage from "../features/dashboard/pages/DashboardPage";
+
+export default function App() {
   const [showPreloader, setShowPreloader] = useState(true);
 
   return (
@@ -17,27 +22,20 @@ function PublicRoutes() {
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/tentang" element={<AboutPage />} />
+          <Route path="/program-kerja" element={<ProgramsPage />} />
           <Route path="/berita" element={<PublicNewsPage />} />
           <Route path="/berita/:slug" element={<PublicNewsDetailPage />} />
+          <Route path="/kontak" element={<ContactPage />} />
         </Route>
+
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin" element={<DashboardPage />} />
       </Routes>
 
       {showPreloader && (
         <Preloader onComplete={() => setShowPreloader(false)} />
       )}
     </>
-  );
-}
-
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/*" element={<PublicRoutes />} />
-
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/admin" element={<DashboardPage />} />
-
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
   );
 }

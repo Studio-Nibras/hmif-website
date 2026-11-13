@@ -1,4 +1,3 @@
-
 .hmif-preloader {
   position: fixed;
   inset: 0;
@@ -66,33 +65,6 @@
   object-fit: contain;
   animation: logo-breathe 3.5s ease-in-out infinite;
 }
-
-/* .preloader-brand {
-  text-align: center;
-  animation: brand-enter 1s ease-out 0.2s both;
-}
-
-.preloader-brand h2 {
-  margin: 0;
-  font-size: 34px;
-  font-weight: 800;
-  letter-spacing: 6px;
-  color: #fff;
-}
-
-.preloader-brand p {
-  margin: 8px 0 5px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #08a9ed;
-}
-
-.preloader-brand span {
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  color: #8c9aaf;
-} */
 
 .preloader-loading {
   width: 190px;
@@ -193,14 +165,6 @@
 @media (max-width: 480px) {
   .preloader-logo-wrapper {
     transform: scale(0.85);
-  }
-
-  .preloader-brand h2 {
-    font-size: 29px;
-  }
-
-  .preloader-brand p {
-    font-size: 9px;
   }
 }
 

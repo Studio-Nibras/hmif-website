@@ -1,4 +1,4 @@
-import { apiRequest } from "../../services/api";
+import { apiRequest } from "../../../services/api";
 
 export function loginAdmin(email, password) {
   return apiRequest("/auth/login", {

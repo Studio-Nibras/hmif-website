@@ -1,4 +1,3 @@
-
 import { Button, Card } from "../../../components/ui";
 import Sidebar, { InitialAvatar } from "./components/Sidebar";
 
@@ -37,12 +36,8 @@ export default function AdminLayout({
 
             <div className="flex items-center gap-3">
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-bold text-hmif-navy">
-                  {admin.name}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Administrator
-                </p>
+                <p className="text-sm font-bold text-hmif-navy">{admin.name}</p>
+                <p className="mt-0.5 text-xs text-slate-500">Administrator</p>
               </div>
               <InitialAvatar name={admin.name} />
             </div>

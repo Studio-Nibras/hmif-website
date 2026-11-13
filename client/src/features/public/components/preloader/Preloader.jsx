@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import logo from "../../../../assets/images/logo/hmif-animated-logo.svg";
 import "./Preloader.css";
 
 export default function Preloader({ onComplete }) {
@@ -48,11 +49,7 @@ export default function Preloader({ onComplete }) {
     <div className={`hmif-preloader ${isExiting ? "is-exiting" : ""}`}>
       <div className="preloader-content">
         <div className="preloader-logo-wrapper">
-          <img
-            src="src/assets/images/logo/hmif-animated-logo.svg"
-            alt="Logo HMIF UNIBA"
-            className="preloader-logo"
-          />
+          <img src={logo} alt="Logo HMIF UNIBA" className="preloader-logo" />
         </div>
 
         <div className="preloader-loading">

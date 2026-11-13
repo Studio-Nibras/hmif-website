@@ -3,10 +3,10 @@ import logo from "../../assets/hmif-logo.png";
 
 const navigationLinks = [
   { label: "Beranda", href: "/" },
-  { label: "Tentang Kami", href: "/#tentang" },
-  { label: "Program Kerja", href: "/#program" },
+  { label: "Tentang HMIF", href: "/tentang" },
+  { label: "Program Kerja", href: "/program-kerja" },
   { label: "Berita & Artikel", href: "/berita" },
-  { label: "Kontak", href: "/#kontak" },
+  { label: "Kontak", href: "/kontak" },
 ];
 
 const divisionLinks = [

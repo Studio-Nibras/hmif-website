@@ -1,22 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Button } from "../ui";
 import logo from "../../assets/hmif-logo.png";
+
+const links = [
+  { label: "Beranda", href: "/", end: true },
+  { label: "Tentang HMIF", href: "/tentang" },
+  { label: "Program Kerja", href: "/program-kerja" },
+  { label: "Berita", href: "/berita" },
+];
+
+const getLinkClass = ({ isActive }) =>
+  `text-sm font-semibold transition ${
+    isActive ? "text-white" : "text-sky-100/80 hover:text-white"
+  }`;
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const links = [
-    { label: "Beranda", href: "#beranda" },
-    { label: "Tentang", href: "#tentang" },
-    { label: "Program Kerja", href: "#program" },
-    { label: "Berita", href: "#berita" },
-  ];
 
   return (
     <header className="absolute inset-x-0 top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:py-7">
-        <Link
+        <NavLink
           to="/"
+          end
           className="flex items-center gap-3"
           aria-label="HMIF UNIBA beranda"
         >
@@ -29,24 +36,26 @@ export default function Navbar() {
               SURAKARTA
             </span>
           </span>
-        </Link>
+        </NavLink>
 
         <div className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
-            <a
+            <NavLink
               key={link.href}
-              href={link.href}
-              className="text-sm font-semibold text-sky-100/80 transition hover:text-white"
+              to={link.href}
+              end={link.end}
+              className={getLinkClass}
             >
               {link.label}
-            </a>
+            </NavLink>
           ))}
-          <a
-            href="#kontak"
+
+          <NavLink
+            to="/kontak"
             className="rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-hmif-teal-dark transition hover:bg-hmif-cyan"
           >
             Hubungi Kami <span aria-hidden="true">↗</span>
-          </a>
+          </NavLink>
         </div>
 
         <Button
@@ -64,22 +73,30 @@ export default function Navbar() {
       {menuOpen && (
         <div className="mx-5 rounded-2xl border border-white/10 bg-hmif-teal-dark/95 p-3 shadow-xl backdrop-blur-xl md:hidden">
           {links.map((link) => (
-            <a
+            <NavLink
               key={link.href}
-              href={link.href}
+              to={link.href}
+              end={link.end}
               onClick={() => setMenuOpen(false)}
-              className="block rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              className={({ isActive }) =>
+                `block rounded-xl px-4 py-3 text-sm font-bold transition ${
+                  isActive
+                    ? "bg-white/15 text-white"
+                    : "text-sky-100 hover:bg-white/10"
+                }`
+              }
             >
               {link.label}
-            </a>
+            </NavLink>
           ))}
-          <a
-            href="#kontak"
+
+          <NavLink
+            to="/kontak"
             onClick={() => setMenuOpen(false)}
             className="mt-2 block rounded-xl bg-white px-4 py-3 text-center text-sm font-extrabold text-hmif-teal-dark"
           >
             Hubungi Kami ↗
-          </a>
+          </NavLink>
         </div>
       )}
     </header>
