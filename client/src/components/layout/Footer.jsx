@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import logo from "../../assets/hmif-logo.webp";
+import usePublicSettings from "../../features/public/settings/usePublicSettings";
 
 const navigationLinks = [
   { label: "Beranda", href: "/" },
@@ -9,12 +10,12 @@ const navigationLinks = [
   { label: "Kontak", href: "/kontak" },
 ];
 
-const divisionLinks = [
-  { label: "Pengembangan Organisasi", href: "#divisi-organisasi" },
-  { label: "Komunikasi & Informasi", href: "#divisi-kominfo" },
-  { label: "Pendidikan & Keilmuan", href: "#divisi-keilmuan" },
-  { label: "Minat & Bakat", href: "#divisi-minat-bakat" },
-  { label: "Kewirausahaan", href: "#divisi-kewirausahaan" },
+const socialPlatforms = [
+  { key: "instagram", label: "Instagram", icon: "◎" },
+  { key: "facebook", label: "Facebook", icon: "f" },
+  { key: "youtube", label: "YouTube", icon: "▶" },
+  { key: "tiktok", label: "TikTok", icon: "♪" },
+  { key: "linkedin", label: "LinkedIn", icon: "in" },
 ];
 
 function FooterLink({ href, children }) {
@@ -37,11 +38,22 @@ function FooterLink({ href, children }) {
 }
 
 export default function Footer() {
+  const { settings } = usePublicSettings();
+
+  const contact = settings?.contact || {};
+  const social = settings?.social || {};
+  const footer = settings?.footer || {};
+
+  const availableSocials = socialPlatforms.filter(
+    (platform) => social[platform.key],
+  );
+
+  const hasContact = contact.email || contact.phone || contact.address;
+
   return (
     <footer className="bg-hmif-teal-dark text-white">
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_0.8fr_0.9fr_1fr] lg:gap-10">
-          {/* Identitas HMIF */}
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_1.2fr_1fr] lg:gap-10">
           <div className="max-w-sm">
             <Link
               to="/"
@@ -57,14 +69,11 @@ export default function Footer() {
             </Link>
 
             <p className="mt-4 text-sm leading-7 text-sky-100/70">
-              Himpunan mahasiswa yang menjadi wadah pengembangan potensi,
-              kreativitas, dan kolaborasi mahasiswa Informatika untuk
-              menciptakan inovasi serta memberikan dampak positif bagi
-              lingkungan sekitar.
+              {footer.description ||
+                "Himpunan Mahasiswa Informatika UNIBA Surakarta."}
             </p>
           </div>
 
-          {/* Navigasi */}
           <div>
             <h2 className="mb-4 text-sm font-bold text-white">
               Navigasi Cepat
@@ -79,56 +88,82 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Divisi */}
-          <div>
-            <h2 className="mb-4 text-sm font-bold text-white">Divisi HMIF</h2>
-
-            <ul className="space-y-2">
-              {divisionLinks.map((item) => (
-                <li key={item.label}>
-                  <FooterLink href={item.href}>{item.label}</FooterLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Sekretariat */}
           <div>
             <h2 className="mb-4 text-sm font-bold text-white">
-              Sekretariat & Alamat
+              Informasi Kontak
             </h2>
 
-            <div className="text-sm leading-6 text-sky-100/70">
-              <p className="flex items-start gap-2.5">
-                <svg
-                  aria-hidden="true"
-                  className="mt-1 size-4 shrink-0 text-hmif-cyan"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"
-                  />
-                  <circle cx="12" cy="10" r="2.5" />
-                </svg>
-                <span>
-                  Universitas Islam Batik Surakarta Jl. KH. Agus Salim No.10,
-                  Sondakan, Kec. Laweyan, Kota Surakarta, Jawa Tengah 57147
-                </span>
+            {hasContact ? (
+              <ul className="space-y-3 text-sm leading-6 text-sky-100/70">
+                {contact.email && (
+                  <li>
+                    <a
+                      href={`mailto:${contact.email}`}
+                      className="transition-colors hover:text-white"
+                    >
+                      {contact.email}
+                    </a>
+                  </li>
+                )}
+
+                {contact.phone && (
+                  <li>
+                    <a
+                      href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}
+                      className="transition-colors hover:text-white"
+                    >
+                      {contact.phone}
+                    </a>
+                  </li>
+                )}
+
+                {contact.address && <li>{contact.address}</li>}
+              </ul>
+            ) : (
+              <p className="text-sm leading-6 text-sky-100/50">
+                Informasi kontak belum tersedia.
               </p>
-            </div>
+            )}
+          </div>
+
+          <div>
+            <h2 className="mb-4 text-sm font-bold text-white">Ikuti Kami</h2>
+
+            {availableSocials.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {availableSocials.map((platform) => (
+                  <a
+                    key={platform.key}
+                    href={social[platform.key]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={platform.label}
+                    title={platform.label}
+                    className="flex size-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-base font-bold text-white transition hover:border-hmif-cyan hover:bg-hmif-cyan hover:text-hmif-teal-dark"
+                  >
+                    {platform.icon}
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm leading-6 text-sky-100/50">
+                Media sosial belum tersedia.
+              </p>
+            )}
+
+            <Link
+              to="/kontak"
+              className="mt-5 inline-block text-sm font-semibold text-hmif-cyan transition-colors hover:text-white"
+            >
+              Lihat informasi kontak →
+            </Link>
           </div>
         </div>
 
-        {/* Footer bottom */}
         <div className="mt-9 flex flex-col gap-3 border-t border-white/15 pt-5 text-xs leading-5 text-sky-100/60 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} HMIF UNIBA Surakarta. Hak cipta
-            dilindungi.
+            © {new Date().getFullYear()}{" "}
+            {footer.copyright_text || "HMIF UNIBA Surakarta."}
           </p>
 
           <Link to="/" className="transition-colors hover:text-white">
