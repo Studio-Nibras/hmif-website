@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "../../assets/hmif-logo.png";
+import logo from "../../assets/hmif-logo.webp";
 
 const navigationLinks = [
   { label: "Beranda", href: "/" },

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "../ui";
-import logo from "../../assets/hmif-logo.png";
+import logo from "../../assets/hmif-logo.webp";
 
 const links = [
   { label: "Beranda", href: "/", end: true },
