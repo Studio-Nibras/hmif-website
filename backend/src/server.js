@@ -9,6 +9,7 @@ const newsRoutes = require("./features/news/news.routes");
 const publicNewsRoutes = require("./features/public-news/publicNews.routes");
 const errorHandler = require("./middleware/errorHandler");
 const overviewRoutes = require("./features/overview/overview.routes");
+const programsRoutes = require("./features/programs/programs.routes");
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET is required");
@@ -48,6 +49,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/news", publicNewsRoutes);
 app.use("/api/admin/news", newsRoutes);
 app.use("/api/admin/overview", overviewRoutes);
+app.use("/api/admin/programs", programsRoutes);
 
 app.use(errorHandler);
 

@@ -8,6 +8,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import navigation from "../layouts/navigation";
 import OverviewPage from "../overview/pages/OverviewPage";
 import DashboardPlaceholder from "../components/DashboardPlaceholder";
+import ProgramsPage from "../programs/pages/ProgramsPage";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -70,6 +71,8 @@ export default function DashboardPage() {
         <OverviewPage admin={admin} />
       ) : activeSection === "news" ? (
         <NewsPage />
+      ) : activeSection === "programs" ? (
+        <ProgramsPage />
       ) : (
         <DashboardPlaceholder
           title={pageTitle}
