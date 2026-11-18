@@ -61,13 +61,7 @@ export default function useNews() {
         setLoading(false);
       }
     }
-  }, [
-    pagination.page,
-    pagination.limit,
-    search,
-    status,
-    categoryId,
-  ]);
+  }, [pagination.page, pagination.limit, search, status, categoryId]);
 
   useEffect(() => {
     let active = true;
@@ -160,6 +154,7 @@ export default function useNews() {
         content: article.content || "",
         cover_image: article.cover_image || "",
         status: article.status || "draft",
+        program_ids: (article.program_ids || []).map(Number),
       });
 
       setFormOpen(true);

@@ -58,7 +58,31 @@ async function getPublishedNewsBySlug(slug) {
     [slug],
   );
 
-  return rows[0] || null;
+  const article = rows[0] || null;
+
+  if (!article) {
+    return null;
+  }
+
+  const [programs] = await pool.execute(
+    `SELECT
+       p.id,
+       p.name,
+       p.slug,
+       p.period,
+       p.status,
+       p.cover_image
+     FROM program_news pn
+     JOIN programs p ON p.id = pn.program_id
+     WHERE pn.article_id = ?
+       AND p.publication_status = 'published'
+     ORDER BY p.display_order ASC, p.name ASC`,
+    [article.id],
+  );
+
+  article.programs = programs;
+
+  return article;
 }
 
 module.exports = {

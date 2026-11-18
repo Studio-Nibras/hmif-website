@@ -9,34 +9,40 @@ function validateArticle(body) {
   const coverImage =
     typeof body.cover_image === "string" ? body.cover_image.trim() : "";
 
+  const rawProgramIds = body.program_ids ?? [];
+
   if (!title || title.length > 255) {
-    return {
-      error: "Judul wajib diisi dan maksimal 255 karakter",
-    };
+    return { error: "Judul wajib diisi dan maksimal 255 karakter" };
   }
 
   if (!content) {
-    return {
-      error: "Isi berita wajib diisi",
-    };
+    return { error: "Isi berita wajib diisi" };
   }
 
   if (!Number.isSafeInteger(categoryId) || categoryId < 1) {
-    return {
-      error: "Kategori berita tidak valid",
-    };
+    return { error: "Kategori berita tidak valid" };
   }
 
   if (!allowedStatuses.includes(status)) {
-    return {
-      error: "Status berita tidak valid",
-    };
+    return { error: "Status berita tidak valid" };
   }
 
   if (coverImage.length > 500) {
-    return {
-      error: "URL gambar maksimal 500 karakter",
-    };
+    return { error: "URL gambar maksimal 500 karakter" };
+  }
+
+  if (!Array.isArray(rawProgramIds)) {
+    return { error: "Daftar program kerja tidak valid" };
+  }
+
+  const programIds = rawProgramIds.map(Number);
+
+  if (programIds.some((id) => !Number.isSafeInteger(id) || id < 1)) {
+    return { error: "ID program kerja tidak valid" };
+  }
+
+  if (new Set(programIds).size !== programIds.length) {
+    return { error: "Program kerja tidak boleh dipilih lebih dari sekali" };
   }
 
   return {
@@ -47,6 +53,7 @@ function validateArticle(body) {
       status,
       excerpt: excerpt || null,
       coverImage: coverImage || null,
+      programIds,
     },
   };
 }
@@ -70,24 +77,18 @@ function validateNewsFilters(query) {
   );
 
   const search = typeof query.search === "string" ? query.search.trim() : "";
-
   const status = typeof query.status === "string" ? query.status : "";
-
   const categoryId = query.category_id ? Number(query.category_id) : null;
 
   if (status && !allowedStatuses.includes(status)) {
-    return {
-      error: "Filter status tidak valid",
-    };
+    return { error: "Filter status tidak valid" };
   }
 
   if (
     categoryId !== null &&
     (!Number.isSafeInteger(categoryId) || categoryId < 1)
   ) {
-    return {
-      error: "Filter kategori tidak valid",
-    };
+    return { error: "Filter kategori tidak valid" };
   }
 
   return {

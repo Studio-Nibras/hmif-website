@@ -10,6 +10,7 @@ const publicNewsRoutes = require("./features/public-news/publicNews.routes");
 const errorHandler = require("./middleware/errorHandler");
 const overviewRoutes = require("./features/overview/overview.routes");
 const programsRoutes = require("./features/programs/programs.routes");
+const publicProgramsRoutes = require("./features/public-programs/publicPrograms.routes");
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET is required");
@@ -47,6 +48,8 @@ app.get("/api/health", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/news", publicNewsRoutes);
+app.use("/api/programs", publicProgramsRoutes);
+
 app.use("/api/admin/news", newsRoutes);
 app.use("/api/admin/overview", overviewRoutes);
 app.use("/api/admin/programs", programsRoutes);

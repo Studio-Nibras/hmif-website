@@ -7,12 +7,9 @@ import {
   Textarea,
 } from "../../../../components/ui";
 
-import {
-  createNews,
-  updateNews,
-  uploadNewsImage,
-} from "../../newsService";
+import { createNews, updateNews, uploadNewsImage } from "../../newsService";
 
+import { getPrograms } from "../../programs/services/programsService";
 import ArticlePreview from "./ArticlePreview";
 
 const emptyForm = {
@@ -22,16 +19,28 @@ const emptyForm = {
   content: "",
   cover_image: "",
   status: "draft",
+  program_ids: [],
 };
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export default function ArticleForm({ initialData, categories, onClose, onSaved }) {
+export default function ArticleForm({
+  initialData,
+  categories,
+  onClose,
+  onSaved,
+}) {
   const [form, setForm] = useState(() => ({
     ...emptyForm,
     ...(initialData || {}),
+    program_ids: (initialData?.program_ids || []).map(Number),
   }));
+
+  const [programs, setPrograms] = useState([]);
+  const [programsLoading, setProgramsLoading] = useState(true);
+  const [programsError, setProgramsError] = useState("");
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -40,6 +49,37 @@ export default function ArticleForm({ initialData, categories, onClose, onSaved 
 
   const previewUrlRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadPrograms() {
+      try {
+        const result = await getPrograms({
+          publication_status: "published",
+          limit: 100,
+        });
+
+        if (active) {
+          setPrograms(result.programs || []);
+        }
+      } catch (err) {
+        if (active) {
+          setProgramsError(err.message || "Gagal memuat daftar program kerja.");
+        }
+      } finally {
+        if (active) {
+          setProgramsLoading(false);
+        }
+      }
+    }
+
+    loadPrograms();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -70,6 +110,20 @@ export default function ArticleForm({ initialData, categories, onClose, onSaved 
   function changeField(event) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function toggleProgram(programId) {
+    setForm((current) => {
+      const selectedIds = current.program_ids || [];
+      const isSelected = selectedIds.includes(programId);
+
+      return {
+        ...current,
+        program_ids: isSelected
+          ? selectedIds.filter((id) => id !== programId)
+          : [...selectedIds, programId],
+      };
+    });
   }
 
   function handleImageChange(event) {
@@ -139,6 +193,7 @@ export default function ArticleForm({ initialData, categories, onClose, onSaved 
         content: form.content.trim(),
         cover_image: coverImageUrl,
         status: form.status,
+        program_ids: (form.program_ids || []).map(Number),
       };
 
       if (initialData?.id) {
@@ -237,6 +292,71 @@ export default function ArticleForm({ initialData, categories, onClose, onSaved 
               required
               placeholder="Tulis isi berita di sini..."
             />
+
+            <div>
+              <div className="mb-2">
+                <label className="block text-sm font-bold text-slate-700">
+                  Program Kerja Terkait
+                </label>
+                <p className="mt-1 text-xs text-slate-500">
+                  Pilih program kerja yang berkaitan dengan berita ini. Bagian
+                  ini boleh dikosongkan.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 p-4">
+                {programsLoading ? (
+                  <p className="text-sm text-slate-500">
+                    Memuat daftar program kerja...
+                  </p>
+                ) : programsError ? (
+                  <p className="text-sm text-red-600">{programsError}</p>
+                ) : programs.length === 0 ? (
+                  <p className="text-sm text-slate-500">
+                    Belum ada program kerja yang dipublikasikan.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {programs.map((program) => {
+                      const programId = Number(program.id);
+                      const checked = (form.program_ids || []).includes(
+                        programId,
+                      );
+
+                      return (
+                        <label
+                          key={program.id}
+                          className="flex cursor-pointer items-start gap-3 rounded-lg p-2 transition hover:bg-slate-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleProgram(programId)}
+                            disabled={saving}
+                            className="mt-1 h-4 w-4 rounded border-slate-300 text-hmif-teal focus:ring-hmif-teal"
+                          />
+
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold text-slate-700">
+                              {program.name}
+                            </span>
+                            {program.description && (
+                              <span className="mt-1 block text-xs text-slate-500">
+                                {program.description}
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                  {(form.program_ids || []).length} program kerja dipilih
+                </p>
+              </div>
+            </div>
 
             <div>
               <label className="block text-sm font-bold text-slate-700">
